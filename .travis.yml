@@ -21,8 +21,15 @@ install:
 script:
   - diff -u <(echo -n) <(gofmt -d .)
   - go vet $(go list ./... | grep -v /vendor/)
-  #- go test -v -race ./...
-  # Only build binaries from the latest Go release.
-  - if [[ "${LATEST}" = "true" ]]; then gox -os="linux darwin windows" -arch="386 amd64 arm" -osarch='!darwin/arm' -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}" -ldflags "-s -w -X main.Revision=$TRAVIS_COMMIT -X main.Version=${TRAVIS_TAG:-dev-build}"  -verbose ./...; fi
+  - bash .ci/build.sh
 
-
+deploy:
+  provider: releases
+  api_key:
+    secure: fStyBCe++8+4JgA6+idFkIc/biT4ISQxr3NvTn7yEdZy6Qy6HkFBCz/we049j1k4sp9Tz0a/Su+4jUVlfA1umAR606Avh4gSO44uS+JzsHB+RmwkxQS5+f6QAzb9oSnLGL/du8ZnNMWTVDm7mcnUnWpHYucwxaNtS0HPLBWc34JiNHfiLL2cSAQgQj59AJKjM6Ipk9FTdkFYYDR3QG3wp46FmHwW9z6nlO5Jf4lmMwycj4Lv2eCPdxypGbagZVt9RHbg31oaVXcCeWJf5S4bx01qR49THw/gzW6Nd/uswKKD/UfFMaXMaHdBL/Ooy2OQwZNSNmg6a6y+5C9srIn5uhw7UqzLpCjjhOG3O/aBSs/1w2IEXUxz/pOPpbPpwPGXsMWJ2TIOPp39QFlOAZNsy+LSo/Z/WDcH/PmNt1hGccynStjjetZbtCD8rDtjyJLP2j0q/XusgFmVSM413rgz+D8/T5/tD76Nw2Dn9lV4l6wUYBuGRBmftiXTgJt/tVzwq4BWYdjBTxY2Ba+1RbpEo+T4P4vxV1KxDoU5R5PupynKdNiG4BXE2218ze6FD+bocW7LiHFuUM61TQJhGBsQ4mhX/nEWC2HZPP0bh1vnHEBiSFiAvY1BC2xjC+iVjaeCGY1XAgBK88gfioof66kosv51Ys5tQ+QC5DCqEsga3hs=
+  file: bin/*
+  on:
+    repo: particleflux/s3fetch
+    tags: true
+    condition: $LATEST = true
+  skip_cleanup: 'true'
