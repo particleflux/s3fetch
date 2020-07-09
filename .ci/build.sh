@@ -11,6 +11,14 @@ if [[ "${LATEST:-false}" = "true" ]]; then
       ./...
 
   pushd bin
+
   sha256sum s3fetch* | tee sha256sums
+  export GZIP_OPT=-9
+  for f in s3fetch* ; do
+    zip -T9 "$f.zip" "$f"
+    tar czvf "$f.tar.gz" "$f"
+    rm "$f"
+  done
+
   popd
 fi
