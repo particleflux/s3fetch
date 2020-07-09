@@ -9,7 +9,7 @@ $(BINARY): $(SOURCES)
 	go build -ldflags="$(LDFLAGS) -X 'main.Revision=$$(git rev-parse HEAD)' -X 'main.Version=dev-build'" -o $(BINARY) $(SOURCES)
 
 clean:
-	$(RM) -rf $(BINARY)
+	$(RM) -rf bin/*
 
 fmt: $(SOURCES)
 	go fmt $(SOURCES)
