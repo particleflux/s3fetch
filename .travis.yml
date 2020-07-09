@@ -23,6 +23,6 @@ script:
   - go vet $(go list ./... | grep -v /vendor/)
   #- go test -v -race ./...
   # Only build binaries from the latest Go release.
-  - if [[ "${LATEST}" = "true" ]]; then gox -os="linux darwin windows" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}" -ldflags "-s -w -X main.Revision=$TRAVIS_COMMIT -X main.Version=${TRAVIS_TAG:-dev-build}"  -verbose ./...; fi
+  - if [[ "${LATEST}" = "true" ]]; then gox -os="linux darwin windows" -arch="386 amd64 arm" -osarch='!darwin/arm' -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}" -ldflags "-s -w -X main.Revision=$TRAVIS_COMMIT -X main.Version=${TRAVIS_TAG:-dev-build}"  -verbose ./...; fi
 
 
