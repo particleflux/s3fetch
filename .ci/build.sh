@@ -16,7 +16,7 @@ if [[ "${LATEST:-false}" = "true" ]]; then
   export GZIP_OPT=-9
   for f in s3fetch* ; do
     zip -T9 "$f.zip" "$f"
-    tar czvf "$f.tar.gz" "$f"
+    tar czvf "$f.tar.gz" --owner=0 --group=0 "$f"
     rm "$f"
   done
 
