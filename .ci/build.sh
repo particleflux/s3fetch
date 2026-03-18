@@ -4,7 +4,7 @@ set -euo pipefail
 if [[ "${LATEST:-false}" = "true" ]]; then
   gox -os="linux darwin windows" \
       -arch="386 amd64 arm" \
-      -osarch='!darwin/arm' \
+      -osarch='!darwin/arm !darwin/386' \
       -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}" \
       -ldflags "-s -w -X main.Revision=$TRAVIS_COMMIT -X main.Version=${TRAVIS_TAG:-dev-build}" \
       -verbose \
