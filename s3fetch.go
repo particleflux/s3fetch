@@ -1,15 +1,17 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 // Set on build time
@@ -46,9 +48,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	sess := session.Must(session.NewSession(&aws.Config{Region: region}))
+	cfg, err := config.LoadDefaultConfig(context.Background(),
+		config.WithRegion(*region),
+	)
+	if err != nil {
+		exitErrorf("Failed to init aws config: %v", err)
+	}
 
-	downloader := s3manager.NewDownloader(sess)
+	svc := s3.NewFromConfig(cfg)
+
+	downloader := transfermanager.New(svc)
 	f := os.Stdout
 	if *output != "-" {
 		f, err = os.Create(*output)
@@ -58,15 +67,20 @@ func main() {
 		defer f.Close()
 	}
 
-	numBytes, err := downloader.Download(f, &s3.GetObjectInput{
-		Bucket: aws.String(objectURL.Host),
-		Key:    aws.String(strings.TrimLeft(objectURL.Path, "/")),
-	})
+	key := strings.TrimLeft(objectURL.Path, "/")
+	dlOutput, err := downloader.DownloadObject(
+		context.Background(),
+		&transfermanager.DownloadObjectInput{
+			Bucket:   aws.String(objectURL.Host),
+			Key:      aws.String(key),
+			WriterAt: f,
+		},
+	)
 	if err != nil {
 		exitErrorf("Failed to download file: %v", err)
 	}
 
-	_, _ = fmt.Fprintf(os.Stderr, "File downloaded, %d bytes\n", numBytes)
+	_, _ = fmt.Fprintf(os.Stderr, "File downloaded, %d bytes\n", *dlOutput.ContentLength)
 }
 
 func exitErrorf(msg string, args ...interface{}) {
